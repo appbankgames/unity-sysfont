@@ -22,12 +22,12 @@ Shader "SysFont/Unlit Transparent"
       ZWrite Off
       Fog { Mode Off }
       AlphaTest Off
-      Blend SrcAlpha OneMinusSrcAlpha
+      Blend One OneMinusSrcAlpha
 
       SetTexture [_MainTex] 
       {
         ConstantColor [_Color]
-        Combine constant, texture * constant
+        Combine texture * constant
       }
     }
   }

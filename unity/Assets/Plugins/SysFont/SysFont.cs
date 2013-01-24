@@ -34,6 +34,16 @@ public class SysFont : MonoBehaviour
     Right = 2
   }
 
+  public enum LineBreakMode
+  {
+    WordWrap = 0, 
+    CharacterWrap, 
+    Clip, 
+    HeadTruncation, 
+    TailTruncation, 
+    MiddleTruncation
+  }
+
 #if UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_IPHONE
 
 #if UNITY_EDITOR || UNITY_STANDALONE_OSX
@@ -45,6 +55,20 @@ public class SysFont : MonoBehaviour
       string fontName, int fontSize, bool isBold, bool isItalic,
       Alignment alignment, int maxWidthPixels, int maxHeightPixels,
       int textureID);
+
+#if UNITY_EDITOR || UNITY_STANDALONE_OSX
+  [DllImport("SysFont")]
+#else
+  [DllImport("__Internal")]
+#endif
+  private static extern void _SysFontQueueTextureWithOptions(string text,
+      string fontName, int fontSize, bool isBold, bool isItalic,
+      Alignment alignment, int maxWidthPixels, int maxHeightPixels,
+      int lineBreakMode, 
+      float fillColorR, float fillColorG, float fillColorB, float fillColorA, 
+      bool isStrokeEnabled, float strokeWidth, float strokeColorR, float strokeColorG, float strokeColorB, float strokeColorA, 
+      bool isShadowEnabled, float shadowOffsetX, float shadowOffsetY, float shadowColorR, float shadowColorG, float shadowColorB, float shadowColorA, 
+      float offset, int textureID);
 
 #if UNITY_EDITOR || UNITY_STANDALONE_OSX
   [DllImport("SysFont")]
@@ -124,6 +148,20 @@ public class SysFont : MonoBehaviour
         textureID);
   }
 
+  private static void _SysFontQueueTextureWithOptions(string text,
+      string fontName, int fontSize, bool isBold, bool isItalic,
+      Alignment alignment, int maxWidthPixels, int maxHeightPixels,
+      int lineBreakMode, 
+      float fillColorR, float fillColorG, float fillColorB, float fillColorA, 
+      bool isStrokeEnabled, float strokeWidth, float strokeColorR, float strokeColorG, float strokeColorB, float strokeColorA, 
+      bool isShadowEnabled, float shadowOffsetX, float shadowOffsetY, float shadowColorR, float shadowColorG, float shadowColorB, float shadowColorA, 
+      float offset, int textureID)
+  {
+    UnitySysFontInstance.Call("queueTexture", text, fontName, fontSize,
+        isBold, isItalic, (int)alignment, maxWidthPixels, maxHeightPixels,
+        textureID);
+  }
+
   private static void _SysFontUpdateQueuedTexture(int textureID)
   {
     UnitySysFontInstance.Call("updateQueuedTexture", textureID);
@@ -165,6 +203,18 @@ public class SysFont : MonoBehaviour
       string fontName, int fontSize, bool isBold, bool isItalic,
       Alignment alignment, int maxWidthPixels, int maxHeightPixels,
       int textureID)
+  {
+    // dummy function: just don't fail the build
+  }
+
+  private static void _SysFontQueueTextureWithOptions(string text,
+      string fontName, int fontSize, bool isBold, bool isItalic,
+      Alignment alignment, int maxWidthPixels, int maxHeightPixels,
+      int lineBreakMode, 
+      float fillColorR, float fillColorG, float fillColorB, float fillColorA, 
+      bool isStrokeEnabled, float strokeWidth, float strokeColorR, float strokeColorG, float strokeColorB, float strokeColorA, 
+      bool isShadowEnabled, float shadowOffsetX, float shadowOffsetY, float shadowColorR, float shadowColorG, float shadowColorB, float shadowColorA, 
+      float offset, int textureID)
   {
     // dummy function: just don't fail the build
   }
@@ -234,6 +284,11 @@ public class SysFont : MonoBehaviour
       int fontSize, bool isBold, bool isItalic, Alignment alignment,
       bool isMultiLine, int maxWidthPixels, int maxHeightPixels, int textureID)
   {
+    if(text == null)
+    {
+      text = "";
+    }
+
     if (isMultiLine == false)
     {
       text = text.Replace("\r\n", "").Replace("\n", "");
@@ -241,6 +296,32 @@ public class SysFont : MonoBehaviour
     _SysFontQueueTexture(text, fontName, fontSize, isBold, isItalic,
         alignment, maxWidthPixels, maxHeightPixels, textureID);
   }
+
+  public static void QueueTextureWithOptions(string text, string fontName,
+      int fontSize, bool isBold, bool isItalic, Alignment alignment,
+      bool isMultiLine, int maxWidthPixels, int maxHeightPixels, int lineBreakMode, 
+      float fillColorR, float fillColorG, float fillColorB, float fillColorA, 
+      bool isStrokeEnabled, float strokeWidth, float strokeColorR, float strokeColorG, float strokeColorB, float strokeColorA, 
+      bool isShadowEnabled, float shadowOffsetX, float shadowOffsetY, float shadowColorR, float shadowColorG, float shadowColorB, float shadowColorA, 
+      float offset, int textureID)
+  {
+    if(text == null)
+    {
+      text = "";
+    }
+
+    if (isMultiLine == false)
+    {
+      text = text.Replace("\r\n", "").Replace("\n", "");
+    }
+    _SysFontQueueTextureWithOptions(text, fontName, fontSize, isBold, isItalic,
+        alignment, maxWidthPixels, maxHeightPixels, lineBreakMode, 
+        fillColorR, fillColorG, fillColorB, fillColorA, 
+        isStrokeEnabled, strokeWidth, strokeColorR, strokeColorG, strokeColorB, strokeColorA, 
+        isShadowEnabled, shadowOffsetX, shadowOffsetY, shadowColorR, shadowColorG, shadowColorB, shadowColorA, 
+        offset, textureID);
+  }
+
 
   public static void UpdateQueuedTexture(int textureID)
   {

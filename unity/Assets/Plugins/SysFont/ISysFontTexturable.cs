@@ -91,6 +91,54 @@ public interface ISysFontTexturable
     set;
   }
 
+  SysFont.LineBreakMode LineBreakMode
+  {
+    get;
+    set;
+  }
+
+  Color FillColor
+  {
+    get;
+    set;
+  }
+
+  bool IsStrokeEnabled
+  {
+    get;
+    set;
+  }
+
+  float StrokeWidth
+  {
+    get;
+    set;
+  }
+
+  Color StrokeColor
+  {
+    get;
+    set;
+  }
+
+  bool IsShadowEnabled
+  {
+    get;
+    set;
+  }
+
+  Vector2 ShadowOffset
+  {
+    get;
+    set;
+  }
+
+  Color ShadowColor
+  {
+    get;
+    set;
+  }
+
   int WidthPixels 
   {
     get;

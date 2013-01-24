@@ -163,6 +163,101 @@ public class SysFontText : MonoBehaviour, ISysFontTexturable
     }
   }
 
+  public SysFont.LineBreakMode LineBreakMode
+  {
+    get
+    {
+      return _texture.LineBreakMode;
+    }
+    set
+    {
+      _texture.LineBreakMode = value;
+    }
+  }
+
+  public Color FillColor
+  {
+    get
+    {
+      return _texture.FillColor;
+    }
+    set
+    {
+      _texture.FillColor = value;
+    }
+  }
+
+  public bool IsStrokeEnabled
+  {
+    get
+    {
+      return _texture.IsStrokeEnabled;
+    }
+    set
+    {
+      _texture.IsStrokeEnabled = value;
+    }
+  }
+
+  public float StrokeWidth
+  {
+    get
+    {
+      return _texture.StrokeWidth;
+    }
+    set
+    {
+      _texture.StrokeWidth = value;
+    }
+  }
+
+  public Color StrokeColor
+  {
+    get
+    {
+      return _texture.StrokeColor;
+    }
+    set
+    {
+      _texture.StrokeColor = value;
+    }
+  }
+
+  public bool IsShadowEnabled
+  {
+    get
+    {
+      return _texture.IsShadowEnabled;
+    }
+    set
+    {
+      _texture.IsShadowEnabled = value;
+    }
+  }
+
+  public Vector2 ShadowOffset
+  {
+    get
+    {
+      return _texture.ShadowOffset;
+    }
+    set
+    {
+      _texture.ShadowOffset = value;
+    }
+  }
+
+  public Color ShadowColor
+  {
+    get
+    {
+      return _texture.ShadowColor;
+    }
+    set
+    {
+      _texture.ShadowColor = value;
+    }
+  }
   public int WidthPixels 
   {
     get
@@ -395,6 +490,9 @@ public class SysFontText : MonoBehaviour, ISysFontTexturable
 
   public void UpdateScale()
   {
+    if(_transform == null){
+      return;
+    }
     Vector3 scale = _transform.localScale;
     scale.x = (float)_texture.TextWidthPixels;
     scale.y = (float)_texture.TextHeightPixels;
@@ -411,6 +509,25 @@ public class SysFontText : MonoBehaviour, ISysFontTexturable
   {
     if (_texture.NeedsRedraw)
     {
+      if(!Application.isEditor)
+      {
+        float baseRate = 0.375f;
+        float r = 1.0f;
+        if ((_pivot == PivotAlignment.TopLeft) ||
+            (_pivot == PivotAlignment.Top) ||
+            (_pivot == PivotAlignment.TopRight))
+        {
+          r = 0.25f;
+        }
+        else if ((_pivot == PivotAlignment.BottomLeft) ||
+            (_pivot == PivotAlignment.Bottom) ||
+            (_pivot == PivotAlignment.BottomRight))
+        {
+          r = 2.0f;
+        }
+        _texture.Offset = _texture.FontSize * baseRate * r;
+      }
+
       _texture.Update();
       UpdateMesh();
       _material.mainTexture = Texture;

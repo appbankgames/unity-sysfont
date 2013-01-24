@@ -163,6 +163,102 @@ public class UISysFontLabel : UIWidget, ISysFontTexturable
     }
   }
 
+  public SysFont.LineBreakMode LineBreakMode
+  {
+    get
+    {
+      return _texture.LineBreakMode;
+    }
+    set
+    {
+      _texture.LineBreakMode = value;
+    }
+  }
+
+  public Color FillColor
+  {
+    get
+    {
+      return _texture.FillColor;
+    }
+    set
+    {
+      _texture.FillColor = value;
+    }
+  }
+
+  public bool IsStrokeEnabled
+  {
+    get
+    {
+      return _texture.IsStrokeEnabled;
+    }
+    set
+    {
+      _texture.IsStrokeEnabled = value;
+    }
+  }
+
+  public float StrokeWidth
+  {
+    get
+    {
+      return _texture.StrokeWidth;
+    }
+    set
+    {
+      _texture.StrokeWidth = value;
+    }
+  }
+
+  public Color StrokeColor
+  {
+    get
+    {
+      return _texture.StrokeColor;
+    }
+    set
+    {
+      _texture.StrokeColor = value;
+    }
+  }
+
+  public bool IsShadowEnabled
+  {
+    get
+    {
+      return _texture.IsShadowEnabled;
+    }
+    set
+    {
+      _texture.IsShadowEnabled = value;
+    }
+  }
+
+  public Vector2 ShadowOffset
+  {
+    get
+    {
+      return _texture.ShadowOffset;
+    }
+    set
+    {
+      _texture.ShadowOffset = value;
+    }
+  }
+
+  public Color ShadowColor
+  {
+    get
+    {
+      return _texture.ShadowColor;
+    }
+    set
+    {
+      _texture.ShadowColor = value;
+    }
+  }
+
   public int WidthPixels 
   {
     get
@@ -221,6 +317,25 @@ public class UISysFontLabel : UIWidget, ISysFontTexturable
   {
     if (_texture.NeedsRedraw)
     {
+      if(!Application.isEditor)
+      {
+        float baseRate = 0.375f;
+        float r = 1.0f;
+        if ((pivot == UIWidget.Pivot.TopLeft) ||
+            (pivot == UIWidget.Pivot.Top) ||
+            (pivot == UIWidget.Pivot.TopRight))
+        {
+          r = 0.25f;
+        }
+        else if ((pivot == UIWidget.Pivot.BottomLeft) ||
+            (pivot == UIWidget.Pivot.Bottom) ||
+            (pivot == UIWidget.Pivot.BottomRight))
+        {
+          r = 2.0f;
+        }
+        _texture.Offset = _texture.FontSize * baseRate * r;
+      }
+
       _texture.Update();
       _uv = new Vector2(_texture.TextWidthPixels /
           (float)_texture.WidthPixels, _texture.TextHeightPixels /
@@ -286,7 +401,7 @@ public class UISysFontLabel : UIWidget, ISysFontTexturable
   {
     if (_shader == null)
     {
-      _shader = Shader.Find("Unlit/Transparent Colored (Packed)");
+      _shader = Shader.Find("Unlit/Transparent Colored");
     }
 
     if (_createdMaterial == null)

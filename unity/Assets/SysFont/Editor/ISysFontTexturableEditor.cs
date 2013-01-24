@@ -171,5 +171,103 @@ public class ISysFontTexturableEditor : SysFontEditor
       LookLikeControls();
     }
     GUILayout.EndHorizontal();
+
+    //
+    // LineBreakMode property
+    //
+    LookLikeControls(100f);
+    SysFont.LineBreakMode lineBreakMode = (SysFont.LineBreakMode)EditorGUILayout.EnumPopup("Line Break Mode",
+        texturable.LineBreakMode, GUILayout.Width(240f));
+    if (lineBreakMode != texturable.LineBreakMode)
+    {
+      RegisterUndo(target, "SysFont Line Break Mode Change");
+      texturable.LineBreakMode = lineBreakMode;
+    }
+
+    //
+    // FillColor property
+    //
+    LookLikeControls(100f);
+    Color fillColor = EditorGUILayout.ColorField("Fill Color",
+        texturable.FillColor, GUILayout.Width(200f));
+    if (fillColor != texturable.FillColor)
+    {
+      RegisterUndo(target, "SysFont Fill Color Change");
+      texturable.FillColor = fillColor;
+    }
+
+    //
+    // IsStrokeEnabled property
+    //
+    bool isStrokeEnabled = EditorGUILayout.BeginToggleGroup("Stroke", texturable.IsStrokeEnabled);
+    if (isStrokeEnabled != texturable.IsStrokeEnabled)
+    {
+      RegisterUndo(target, "SysFont IsStrokeEnabled Change");
+      texturable.IsStrokeEnabled = isStrokeEnabled;
+    }
+
+    //
+    // StrokeWidth property
+    //
+    LookLikeControls(100f);
+    float strokeWidth = EditorGUILayout.FloatField("Width",
+        texturable.StrokeWidth, GUILayout.Width(200f));
+    if (strokeWidth != texturable.StrokeWidth)
+    {
+      RegisterUndo(target, "SysFont Stroke Width Change");
+      texturable.StrokeWidth = strokeWidth;
+    }
+
+    //
+    // StrokeColor property
+    //
+    LookLikeControls(100f);
+    Color strokeColor = EditorGUILayout.ColorField("Color",
+        texturable.StrokeColor, GUILayout.Width(200f));
+    if (strokeColor != texturable.StrokeColor)
+    {
+      RegisterUndo(target, "SysFont Stroke Color Change");
+      texturable.StrokeColor = strokeColor;
+    }
+
+    EditorGUILayout.EndToggleGroup();
+
+    //
+    // IsShadowEnabled property
+    //
+    bool isShadowEnabled = EditorGUILayout.BeginToggleGroup("Shadow", texturable.IsShadowEnabled);
+    if (isShadowEnabled != texturable.IsShadowEnabled)
+    {
+      RegisterUndo(target, "SysFont IsShadowEnabled Change");
+      texturable.IsShadowEnabled = isShadowEnabled;
+    }
+
+    //
+    // ShadowOffset property
+    //
+    LookLikeControls(100f);
+    Vector2 shadowOffset = EditorGUILayout.Vector2Field("Offset",
+        texturable.ShadowOffset, GUILayout.Width(200f));
+    if (shadowOffset != texturable.ShadowOffset)
+    {
+      RegisterUndo(target, "SysFont Shadow Offset Change");
+      texturable.ShadowOffset = shadowOffset;
+    }
+
+    //
+    // ShadowColor property
+    //
+    LookLikeControls(100f);
+    Color shadowColor = EditorGUILayout.ColorField("Color",
+        texturable.ShadowColor, GUILayout.Width(200f));
+    if (shadowColor != texturable.ShadowColor)
+    {
+      RegisterUndo(target, "SysFont Shadow Color Change");
+      texturable.ShadowColor = shadowColor;
+    }
+    
+    EditorGUILayout.EndToggleGroup();
+
+    LookLikeControls();
   }
 }

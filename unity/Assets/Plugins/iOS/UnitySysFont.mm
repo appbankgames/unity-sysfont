@@ -27,6 +27,7 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <OpenGLES/EAGL.h>
 #import <OpenGLES/ES1/gl.h>
+#import <CoreText/CoreText.h>
 
 extern EAGLContext* _context;
 
@@ -64,13 +65,27 @@ int nextPowerOfTwo(int n)
   int maxWidthPixels;
   int maxHeightPixels;
   int textureID;
+  
+	int lineBreakMode;
+	BOOL isStrokeEnabled;
+	float strokeWidth;
+	BOOL isShadowEnabled;
+	CGPoint shadowOffset;
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+	UIColor *fillColor;
+	UIColor *strokeColor;
+	UIColor *shadowColor;
+#elif TARGET_OS_MAC
+	NSColor *fillColor;
+	NSColor *strokeColor;
+	NSColor *shadowColor;
+#endif
+	float lineSpacing;
+	float offset;
 
   BOOL ready;
 
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-#elif TARGET_OS_MAC
-  NSAttributedString *attributedString;
-#endif
+  NSMutableAttributedString *attributedString;
 
   @public int textWidth;
   @public int textHeight;
@@ -115,6 +130,25 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
     maxWidthPixels = _maxWidthPixels;
     maxHeightPixels = _maxHeightPixels;
     textureID = _textureID;
+	  lineBreakMode = 0;
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+	  fillColor = [UIColor whiteColor];
+#elif TARGET_OS_MAC
+	  fillColor = [NSColor whiteColor];
+#endif
+	  isStrokeEnabled = NO;
+	  strokeWidth = 0.0f;
+	  strokeColor = nil;
+	  isShadowEnabled = NO;
+	  shadowOffset = CGPointMake(0.0f, 0.0f);
+	  shadowColor = nil;
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+	  lineSpacing = fontSize / 4.0f;
+#elif TARGET_OS_MAC
+	  lineSpacing = 0.0f;
+#endif
+	  offset = 0.0f;
+	  
     ready = NO;
     [self prepare];
   }
@@ -122,12 +156,63 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
   return self;
 }
 
+
+- (id)initWithText:(const char *)_text fontName:(const char *)_fontName
+		  fontSize:(int)_fontSize isBold:(BOOL)_isBold isItalic:(BOOL)_isItalic
+		 alignment:(int)_alignment maxWidthPixels:(int)_maxWidthPixels maxHeightPixels:(int)_maxHeightPixels
+	 lineBreakMode:(int)_lineBreakMode
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+	   fillColor:(UIColor *)_fillColor
+   isStrokeEnabled:(BOOL)_isStrokeEnabled strokeWidth:(float)_strokeWidth strokeColor:(UIColor *)_strokeColor
+   isShadowEnabled:(BOOL)_isShadowEnabled shadowOffset:(CGPoint)_shadowOffset shadowColor:(UIColor *)_shadowColor
+#elif TARGET_OS_MAC
+	   fillColor:(NSColor *)_fillColor
+   isStrokeEnabled:(BOOL)_isStrokeEnabled strokeWidth:(float)_strokeWidth strokeColor:(NSColor *)_strokeColor
+   isShadowEnabled:(BOOL)_isShadowEnabled shadowOffset:(CGPoint)_shadowOffset shadowColor:(NSColor *)_shadowColor
+#endif
+			offset:(float)_offset
+		 textureID:(int)_textureID
+{
+  self = [super init];
+  
+  if (self != nil)
+  {
+    text = [[NSString stringWithUTF8String:((_text == NULL) ? "" : _text)]
+        retain];
+    fontName = [[NSString stringWithUTF8String:((_fontName == NULL) ? "" :
+                          _fontName)] retain];
+    fontSize = _fontSize;
+    isBold = _isBold;
+    isItalic = _isItalic;
+    alignment = _alignment;
+    maxWidthPixels = _maxWidthPixels;
+    maxHeightPixels = _maxHeightPixels;
+    textureID = _textureID;
+	  lineBreakMode = _lineBreakMode;
+	  fillColor = _fillColor;
+	  isStrokeEnabled = _isStrokeEnabled;
+	  strokeWidth = _strokeWidth;
+	  strokeColor = _strokeColor;
+	  isShadowEnabled = _isShadowEnabled;
+	  shadowOffset = (isShadowEnabled? _shadowOffset: CGPointMake(0.0f, 0.0f));
+	  shadowColor = _shadowColor;
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+	  lineSpacing = fontSize / 4.0f;
+#elif TARGET_OS_MAC
+	  lineSpacing = 0.0f;
+#endif
+	  offset = _offset;
+	  
+    ready = NO;
+    [self prepare];
+  }
+  
+  return self;
+}
+
 - (void)dealloc
 {
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-#elif TARGET_OS_MAC
   [attributedString release];
-#endif
   [text release];
   [fontName release];
   [super dealloc];
@@ -207,8 +292,39 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
   CGSize boundsSize;
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+	CTFontRef ctFont = CTFontCreateWithName((CFStringRef)fontName, fontSize, NULL);
+	NSMutableDictionary *attributes = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+									   (id)ctFont, (id)kCTFontAttributeName, nil];
+
+	attributedString = [[NSMutableAttributedString alloc]
+						initWithString:text attributes:attributes];
+	
+	CTLineBreakMode ctLineBreakMode = (CTLineBreakMode)lineBreakMode;
+	CTTextAlignment textAlignMent = kCTLeftTextAlignment;
+	if(alignment == 1)
+	{
+		textAlignMent = kCTCenterTextAlignment;
+	}
+	else if(alignment == 2)
+	{
+		textAlignMent = kCTRightTextAlignment;
+	}
+	
+	CTParagraphStyleSetting paragraphStyleSettings[] = {
+		{ kCTParagraphStyleSpecifierLineBreakMode, sizeof(CTLineBreakMode), (const void *)&ctLineBreakMode },
+		{ kCTParagraphStyleSpecifierAlignment, sizeof(CTTextAlignment), (const void *)&textAlignMent },
+		{ kCTParagraphStyleSpecifierMinimumLineSpacing, sizeof(CGFloat), &lineSpacing },
+		{ kCTParagraphStyleSpecifierMaximumLineSpacing, sizeof(CGFloat), &lineSpacing },
+	};
+	
+	CFRange range = CFRangeMake(0, attributedString.length);
+	CTParagraphStyleRef paragraphStyle = CTParagraphStyleCreate(paragraphStyleSettings, sizeof(paragraphStyleSettings) / sizeof(paragraphStyleSettings[0]));
+	CFAttributedStringSetAttribute((CFMutableAttributedStringRef)attributedString, range, kCTParagraphStyleAttributeName, paragraphStyle);
+	CFRelease(paragraphStyle);
+	CFRelease(ctFont);
+	
   boundsSize = [text sizeWithFont:[self font] constrainedToSize:maxSize
-    lineBreakMode:UILineBreakModeWordWrap];
+    lineBreakMode:(UILineBreakMode)lineBreakMode];
 #elif TARGET_OS_MAC
 
   NSTextAlignment _alignment = NSLeftTextAlignment;
@@ -224,21 +340,33 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 
   NSMutableParagraphStyle *parStyle = [[NSMutableParagraphStyle alloc] init];
   [parStyle setAlignment:_alignment];
-  [parStyle setLineBreakMode:NSLineBreakByWordWrapping];
+  [parStyle setLineBreakMode:(NSLineBreakMode)lineBreakMode];
+	[parStyle setMaximumLineHeight:lineSpacing];
+	[parStyle setMinimumLineHeight:lineSpacing];
 
-  NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:
+  NSMutableDictionary *attributes = [NSMutableDictionary dictionaryWithObjectsAndKeys:
     [self font], NSFontAttributeName,
     [NSColor whiteColor], NSForegroundColorAttributeName,
     [NSColor clearColor], NSBackgroundColorAttributeName,
     parStyle, NSParagraphStyleAttributeName, nil];
 
-  attributedString = [[NSAttributedString alloc] 
+  attributedString = [[NSMutableAttributedString alloc] 
     initWithString:text attributes:attributes];
 
   boundsSize = NSSizeToCGSize([attributedString
       boundingRectWithSize:NSSizeFromCGSize(maxSize)
       options:NSStringDrawingUsesLineFragmentOrigin].size);
 #endif
+
+	if(isStrokeEnabled)
+	{
+		boundsSize = CGSizeMake(boundsSize.width + strokeWidth * 2.0f, boundsSize.height + strokeWidth * 2.0f);
+	}
+	
+	if(isShadowEnabled)
+	{
+		boundsSize = CGSizeMake(boundsSize.width + fabsf(shadowOffset.x), boundsSize.height + fabsf(shadowOffset.y));
+	}
 
   textWidth = (int)ceilf(boundsSize.width);
   if (textWidth > maxWidthPixels)
@@ -266,9 +394,11 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 - (void)render
 {
-  void *bitmapData = calloc(textureHeight, textureWidth);
+  void *bitmapData = calloc(textureHeight, textureWidth * 4);
+  CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
   CGContextRef context = CGBitmapContextCreate(bitmapData, textureWidth,
-      textureHeight, 8, textureWidth, NULL, kCGImageAlphaOnly);
+											   textureHeight, 8, textureWidth * 4, colorSpace, kCGImageAlphaPremultipliedLast);
+	CGColorSpaceRelease(colorSpace);
 
   if (context == NULL)
   {
@@ -280,26 +410,75 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 
   CGContextSetAlpha(context, 1.f);
 
-  CGRect drawRect = CGRectMake(0.f, (float)(textureHeight - textHeight),
-      textWidth, textHeight);
-
-  UITextAlignment _alignment = UITextAlignmentLeft;
-
-  if (alignment == 1)
-  {
-    _alignment = UITextAlignmentCenter;
-  }
-  else if (alignment == 2)
-  {
-    _alignment = UITextAlignmentRight;
-  }
-
-  [text drawInRect:drawRect withFont:[self font]
-    lineBreakMode:UILineBreakModeWordWrap alignment:_alignment];
+  CGRect drawRect = CGRectMake(0.f, (float)(textureHeight - textHeight) + offset,
+      textWidth, textHeight - offset);
+	
+	if(isStrokeEnabled)
+	{
+		drawRect = CGRectOffset(drawRect, (alignment == 0)? strokeWidth: (alignment == 2)? -strokeWidth: 0, strokeWidth);
+	}
+	
+  CGContextSaveGState(context);
+  CGContextTranslateCTM(context, 0.0f, drawRect.size.height + drawRect.origin.y * 2);
+  CGContextScaleCTM(context, 1.0f, -1.0f);
+  
+	CGContextSetLineJoin(context, kCGLineJoinRound);
+	
+	CFRange cfRange = CFRangeMake(0, attributedString.length);
+	NSRange nsRange = NSMakeRange(cfRange.location, cfRange.length);
+	CTFramesetterRef framesetter;
+	CGPathRef path;
+	CTFrameRef textFrame;
+	
+	if(isShadowEnabled)
+	{
+		// Draw shadow
+		if(isStrokeEnabled)
+		{
+			[attributedString addAttribute:(id)kCTStrokeWidthAttributeName value:[NSNumber numberWithFloat:strokeWidth * 2.0f / (CGFloat)fontSize * 100.0f] range:nsRange];
+			[attributedString addAttribute:(id)kCTStrokeColorAttributeName value:(id)shadowColor.CGColor range:nsRange];
+		}
+		[attributedString addAttribute:(id)kCTForegroundColorAttributeName value:(id)shadowColor.CGColor range:nsRange];
+		
+		framesetter = CTFramesetterCreateWithAttributedString((CFMutableAttributedStringRef)attributedString);
+		path = [[UIBezierPath bezierPathWithRect:CGRectOffset(drawRect, shadowOffset.x, shadowOffset.y)] CGPath];
+		textFrame = CTFramesetterCreateFrame(framesetter, cfRange, path, NULL);
+		CTFrameDraw(textFrame, context);
+		CFRelease(textFrame);
+		CFRelease(framesetter);
+	}
+	
+	if(isStrokeEnabled)
+	{
+		// Draw stroke
+		[attributedString addAttribute:(id)kCTStrokeWidthAttributeName value:[NSNumber numberWithFloat:strokeWidth * 2.0f / (CGFloat)fontSize * 100.0f] range:nsRange];
+		[attributedString addAttribute:(id)kCTStrokeColorAttributeName value:(id)strokeColor.CGColor range:nsRange];
+		
+		framesetter = CTFramesetterCreateWithAttributedString((CFMutableAttributedStringRef)attributedString);
+		path = [[UIBezierPath bezierPathWithRect:drawRect] CGPath];
+		textFrame = CTFramesetterCreateFrame(framesetter, cfRange, path, NULL);
+		CTFrameDraw(textFrame, context);
+		CFRelease(textFrame);
+		CFRelease(framesetter);
+	}
+	
+	// Draw text
+	[attributedString removeAttribute:(id)kCTStrokeWidthAttributeName range:nsRange];
+	[attributedString removeAttribute:(id)kCTStrokeColorAttributeName range:nsRange];
+	[attributedString addAttribute:(id)kCTForegroundColorAttributeName value:(id)fillColor.CGColor range:nsRange];
+	
+	framesetter = CTFramesetterCreateWithAttributedString((CFMutableAttributedStringRef)attributedString);
+	path = [[UIBezierPath bezierPathWithRect:drawRect] CGPath];
+	textFrame = CTFramesetterCreateFrame(framesetter, cfRange, path, NULL);
+	CTFrameDraw(textFrame, context);
+	CFRelease(textFrame);
+	CFRelease(framesetter);
+	
+  CGContextRestoreGState(context);
 
   UIGraphicsPopContext();
 
-  [self bindTextureWithFormat:GL_ALPHA bitmapData:bitmapData];
+	[self bindTextureWithFormat:GL_RGBA bitmapData:bitmapData];
 
   CGContextRelease(context); 
   free(bitmapData);
@@ -309,9 +488,9 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 {
   NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc]
     initWithBitmapDataPlanes:NULL pixelsWide:textureWidth
-    pixelsHigh:textureHeight bitsPerSample:8 samplesPerPixel:1 hasAlpha:NO
-    isPlanar:NO colorSpaceName:NSCalibratedWhiteColorSpace bitmapFormat:0
-    bytesPerRow:textureWidth bitsPerPixel:8];
+							  pixelsHigh:textureHeight bitsPerSample:8 samplesPerPixel:4 hasAlpha:YES
+							  isPlanar:NO colorSpaceName:NSCalibratedRGBColorSpace bitmapFormat:0
+							  bytesPerRow:textureWidth * 4 bitsPerPixel:0];
 
   if (bitmap == nil)
   {
@@ -331,16 +510,49 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
   NSRect textureRect = NSMakeRect(0.f, 0.f, textureWidth, textureHeight);
   NSRect drawRect = NSMakeRect(0.f, 0.f, textWidth, textHeight);
 
+	if(isStrokeEnabled)
+	{
+		drawRect = NSOffsetRect(drawRect, (alignment == 0)? strokeWidth: (alignment == 2)? -strokeWidth: 0, -strokeWidth);
+	}
+	
   [[NSColor clearColor] setFill];
   NSRectFill(textureRect);
 
   [[NSColor whiteColor] set];
+	
+	NSRange nsRange = NSMakeRange(0, [attributedString length]);
+	if(isShadowEnabled)
+	{
+		// Draw shadow
+		if(isStrokeEnabled)
+		{
+			[attributedString addAttribute:NSStrokeWidthAttributeName value:[NSNumber numberWithFloat:strokeWidth * 2.0f / (CGFloat)fontSize * 100.0f] range:nsRange];
+			[attributedString addAttribute:NSStrokeColorAttributeName value:shadowColor range:nsRange];
+		}
+		[attributedString addAttribute:NSForegroundColorAttributeName value:shadowColor range:nsRange];
+		[attributedString drawWithRect:NSOffsetRect(drawRect, shadowOffset.x, shadowOffset.y)
+							   options:NSStringDrawingUsesLineFragmentOrigin];
+	}
+	
+	if(isStrokeEnabled)
+	{
+		// Draw stroke
+		[attributedString addAttribute:NSStrokeWidthAttributeName value:[NSNumber numberWithFloat:strokeWidth * 2.0f / (CGFloat)fontSize * 100.0f] range:nsRange];
+		[attributedString addAttribute:NSStrokeColorAttributeName value:strokeColor range:nsRange];
+		[attributedString drawWithRect:drawRect
+							   options:NSStringDrawingUsesLineFragmentOrigin];
+	}
+	
+	// Draw text
+	[attributedString removeAttribute:NSStrokeWidthAttributeName range:nsRange];
+	[attributedString removeAttribute:NSStrokeColorAttributeName range:nsRange];
+	[attributedString addAttribute:NSForegroundColorAttributeName value:fillColor range:nsRange];
   [attributedString drawWithRect:drawRect
     options:NSStringDrawingUsesLineFragmentOrigin];
 
   [NSGraphicsContext restoreGraphicsState];
 
-  [self bindTextureWithFormat:GL_ALPHA bitmapData:[bitmap bitmapData]];
+	[self bindTextureWithFormat:GL_RGBA bitmapData:[bitmap bitmapData]];
 
   [bitmap release];
 }
@@ -354,8 +566,8 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, textureWidth, textureHeight, 0,
-      format, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0,
+				 format, GL_UNSIGNED_BYTE, data);
 }
 @end
 
@@ -471,6 +683,14 @@ extern "C"
       int fontSize, BOOL isBold, BOOL isItalic, int alignment,
       int maxWidthPixels, int maxHeightPixels, int textureID);
 
+  void _SysFontQueueTextureWithOptions(const char *text, const char *fontName,
+									   int fontSize, BOOL isBold, BOOL isItalic, int alignment,
+									   int maxWidthPixels, int maxHeightPixels, int lineBreakMode,
+									   float fillColorR, float fillColorG, float fillColorB, float fillColorA,
+									   BOOL isStrokeEnabled, float strokeWidth, float strokeColorR, float strokeColorG, float strokeColorB, float strokeColorA,
+									   BOOL isShadowEnabled, float shadowOffsetX, float shadowOffsetY, float shadowColorR, float shadowColorG, float shadowColorB, float shadowColorA,
+									   float offset, int textureID);
+  
   int _SysFontGetTextureWidth(int textureID);
 
   int _SysFontGetTextureHeight(int textureID);
@@ -506,6 +726,41 @@ void _SysFontQueueTexture(const char *text, const char *fontName,
     [instance queueUpdate:update];
   }
 }
+
+
+void _SysFontQueueTextureWithOptions(const char *text, const char *fontName,
+									 int fontSize, BOOL isBold, BOOL isItalic, int alignment,
+									 int maxWidthPixels, int maxHeightPixels, int lineBreakMode,
+									 float fillColorR, float fillColorG, float fillColorB, float fillColorA,
+									 BOOL isStrokeEnabled, float strokeWidth, float strokeColorR, float strokeColorG, float strokeColorB, float strokeColorA,
+									 BOOL isShadowEnabled, float shadowOffsetX, float shadowOffsetY, float shadowColorR, float shadowColorG, float shadowColorB, float shadowColorA,
+									 float offset, int textureID)
+{
+  UnitySysFontTextureManager *instance;
+  UnitySysFontTextureUpdate *update;
+  
+  update = [[UnitySysFontTextureUpdate alloc] initWithText:text
+												  fontName:fontName fontSize:fontSize isBold:isBold isItalic:isItalic
+												 alignment:alignment maxWidthPixels:maxWidthPixels
+										   maxHeightPixels:maxHeightPixels lineBreakMode:lineBreakMode
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+												 fillColor:[UIColor colorWithRed:fillColorR green:fillColorG blue:fillColorB alpha:fillColorA]
+										   isStrokeEnabled:isStrokeEnabled strokeWidth:strokeWidth strokeColor:[UIColor colorWithRed:strokeColorR green:strokeColorG blue:strokeColorB alpha:strokeColorA]
+										   isShadowEnabled:isShadowEnabled shadowOffset:CGPointMake(shadowOffsetX, shadowOffsetY) shadowColor:[UIColor colorWithRed:shadowColorR green:shadowColorG blue:shadowColorB alpha:shadowColorA]
+#elif TARGET_OS_MAC
+												 fillColor:[NSColor colorWithCalibratedRed:fillColorR green:fillColorG blue:fillColorB alpha:fillColorA]
+										   isStrokeEnabled:isStrokeEnabled strokeWidth:strokeWidth strokeColor:[NSColor colorWithCalibratedRed:strokeColorR green:strokeColorG blue:strokeColorB alpha:strokeColorA]
+										   isShadowEnabled:isShadowEnabled shadowOffset:CGPointMake(shadowOffsetX, shadowOffsetY) shadowColor:[NSColor colorWithCalibratedRed:shadowColorR green:shadowColorG blue:shadowColorB alpha:shadowColorA]
+#endif
+													offset:offset textureID:textureID];
+  
+  instance = [UnitySysFontTextureManager sharedInstance];
+  @synchronized(instance)
+  {
+    [instance queueUpdate:update];
+  }
+}
+
 
 int _SysFontGetTextureWidth(int textureID)
 {

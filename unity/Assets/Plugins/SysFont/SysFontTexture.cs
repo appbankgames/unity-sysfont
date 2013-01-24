@@ -57,6 +57,17 @@ public class SysFontTexture : ISysFontTexturable
   [SerializeField]
   protected int _maxHeightPixels = 2048;
 
+  [SerializeField] protected SysFont.LineBreakMode _lineBreakMode = SysFont.LineBreakMode.WordWrap;
+  [SerializeField] protected Color _fillColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+  [SerializeField] protected bool _isStrokeEnabled = false;
+  [SerializeField] protected float _strokeWidth = 2.0f;
+  [SerializeField] protected Color _strokeColor = new Color(0.0f, 0.0f, 0.0f, 0.6f);
+  [SerializeField] protected bool _isShadowEnabled = false;
+  [SerializeField] protected Vector2 _shadowOffset = new Vector2(2.0f, -2.0f);
+  [SerializeField] protected Color _shadowColor = new Color(0.0f, 0.0f, 0.0f, 0.75f);
+
+  protected float _offset = 0.0f;
+
   protected string _lastText;
   public string Text
   {
@@ -242,6 +253,150 @@ public class SysFontTexture : ISysFontTexturable
     }
   }
 
+  protected SysFont.LineBreakMode _lastLineBreakMode;
+  public SysFont.LineBreakMode LineBreakMode
+  {
+    get
+    {
+      return _lineBreakMode;
+    }
+    set
+    {
+      if (_lineBreakMode != value)
+      {
+        _lineBreakMode = value;
+      }
+    }
+  }
+
+  protected Color _lastFillColor;
+  public Color FillColor
+  {
+    get
+    {
+      return _fillColor;
+    }
+    set
+    {
+      if (_fillColor != value)
+      {
+        _fillColor = value;
+      }
+    }
+  }
+
+  protected bool _lastIsStrokeEnabled;
+  public bool IsStrokeEnabled
+  {
+    get
+    {
+      return _isStrokeEnabled;
+    }
+    set
+    {
+      if (_isStrokeEnabled != value)
+      {
+        _isStrokeEnabled = value;
+      }
+    }
+  }
+
+  protected float _lastStrokeWidth;
+  public float StrokeWidth
+  {
+    get
+    {
+      return _strokeWidth;
+    }
+    set
+    {
+      if (_strokeWidth != value)
+      {
+        _strokeWidth = value;
+      }
+    }
+  }
+
+  protected Color _lastStrokeColor;
+  public Color StrokeColor
+  {
+    get
+    {
+      return _strokeColor;
+    }
+    set
+    {
+      if (_strokeColor != value)
+      {
+        _strokeColor = value;
+      }
+    }
+  }
+
+  protected bool _lastIsShadowEnabled;
+  public bool IsShadowEnabled
+  {
+    get
+    {
+      return _isShadowEnabled;
+    }
+    set
+    {
+      if (_isShadowEnabled != value)
+      {
+        _isShadowEnabled = value;
+      }
+    }
+  }
+
+  protected Vector2 _lastShadowOffset;
+  public Vector2 ShadowOffset
+  {
+    get
+    {
+      return _shadowOffset;
+    }
+    set
+    {
+      if (_shadowOffset != value)
+      {
+        _shadowOffset = value;
+      }
+    }
+  }
+
+  protected Color _lastShadowColor;
+  public Color ShadowColor
+  {
+    get
+    {
+      return _shadowColor;
+    }
+    set
+    {
+      if (_shadowColor != value)
+      {
+        _shadowColor = value;
+      }
+    }
+  }
+
+  protected float _lastOffset;
+  public float Offset
+  {
+    get
+    {
+      return _offset;
+    }
+    set
+    {
+      if (_offset != value)
+      {
+        _offset = value;
+      }
+    }
+  }
+
   protected int _widthPixels = 1;
   public int WidthPixels 
   {
@@ -299,7 +454,15 @@ public class SysFontTexture : ISysFontTexturable
         (_alignment != _lastAlignment) ||
         (_isMultiLine != _lastIsMultiLine) ||
         (_maxWidthPixels != _lastMaxWidthPixels) ||
-        (_maxHeightPixels != _lastMaxHeightPixels);
+        (_maxHeightPixels != _lastMaxHeightPixels) || 
+        (_lineBreakMode != _lastLineBreakMode) || 
+        (_fillColor != _lastFillColor) || 
+        (_isStrokeEnabled != _lastIsStrokeEnabled) || 
+        (_strokeWidth != _lastStrokeWidth) || 
+        (_strokeColor != _lastStrokeColor) || 
+        (_isShadowEnabled != _lastIsShadowEnabled) || 
+        (_shadowOffset != _lastShadowOffset) || 
+        (_shadowColor != _lastShadowColor);
     }
   }
 
@@ -316,9 +479,13 @@ public class SysFontTexture : ISysFontTexturable
 
     int textureID = _texture.GetNativeTextureID();
 
-    SysFont.QueueTexture(_text, FontName, _fontSize, _isBold,
+    SysFont.QueueTextureWithOptions(_text, FontName, _fontSize, _isBold,
         _isItalic, _alignment, _isMultiLine, _maxWidthPixels,
-        _maxHeightPixels, textureID);
+        _maxHeightPixels, (int)_lineBreakMode, 
+        _fillColor.r, _fillColor.g, _fillColor.b, _fillColor.a, 
+        _isStrokeEnabled, _strokeWidth, _strokeColor.r, _strokeColor.g, _strokeColor.b, _strokeColor.a, 
+        _isShadowEnabled, _shadowOffset.x, _shadowOffset.y, _shadowColor.r, _shadowColor.g, _shadowColor.b, _shadowColor.a, 
+        _offset, textureID);
 
     _textWidthPixels = SysFont.GetTextWidth(textureID);
     _textHeightPixels = SysFont.GetTextHeight(textureID);
@@ -336,6 +503,13 @@ public class SysFontTexture : ISysFontTexturable
     _lastIsMultiLine = _isMultiLine;
     _lastMaxWidthPixels = _maxWidthPixels;
     _lastMaxHeightPixels = _maxHeightPixels;
+    _lastLineBreakMode = _lineBreakMode;
+    _lastFillColor = _fillColor;
+    _lastStrokeWidth = _strokeWidth;
+    _lastStrokeColor = _strokeColor;
+    _lastShadowOffset = _shadowOffset;
+    _lastShadowColor = _shadowColor;
+    _lastOffset = _offset;
   }
 
   public void Destroy()
