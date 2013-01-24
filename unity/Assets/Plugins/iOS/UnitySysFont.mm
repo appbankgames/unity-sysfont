@@ -142,11 +142,7 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 	  isShadowEnabled = NO;
 	  shadowOffset = CGPointMake(0.0f, 0.0f);
 	  shadowColor = nil;
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-	  lineSpacing = fontSize / 4.0f;
-#elif TARGET_OS_MAC
 	  lineSpacing = 0.0f;
-#endif
 	  offset = 0.0f;
 	  
     ready = NO;
@@ -170,7 +166,7 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
    isStrokeEnabled:(BOOL)_isStrokeEnabled strokeWidth:(float)_strokeWidth strokeColor:(NSColor *)_strokeColor
    isShadowEnabled:(BOOL)_isShadowEnabled shadowOffset:(CGPoint)_shadowOffset shadowColor:(NSColor *)_shadowColor
 #endif
-			offset:(float)_offset
+	   lineSpacing:(float)_lineSpacing offset:(float)_offset
 		 textureID:(int)_textureID
 {
   self = [super init];
@@ -196,11 +192,7 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 	  isShadowEnabled = _isShadowEnabled;
 	  shadowOffset = (isShadowEnabled? _shadowOffset: CGPointMake(0.0f, 0.0f));
 	  shadowColor = _shadowColor;
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-	  lineSpacing = fontSize / 4.0f;
-#elif TARGET_OS_MAC
-	  lineSpacing = 0.0f;
-#endif
+	  lineSpacing = _lineSpacing;
 	  offset = _offset;
 	  
     ready = NO;
@@ -313,7 +305,6 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 	CTParagraphStyleSetting paragraphStyleSettings[] = {
 		{ kCTParagraphStyleSpecifierLineBreakMode, sizeof(CTLineBreakMode), (const void *)&ctLineBreakMode },
 		{ kCTParagraphStyleSpecifierAlignment, sizeof(CTTextAlignment), (const void *)&textAlignMent },
-		{ kCTParagraphStyleSpecifierMinimumLineSpacing, sizeof(CGFloat), &lineSpacing },
 		{ kCTParagraphStyleSpecifierMaximumLineSpacing, sizeof(CGFloat), &lineSpacing },
 	};
 	
@@ -342,7 +333,6 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
   [parStyle setAlignment:_alignment];
   [parStyle setLineBreakMode:(NSLineBreakMode)lineBreakMode];
 	[parStyle setMaximumLineHeight:lineSpacing];
-	[parStyle setMinimumLineHeight:lineSpacing];
 
   NSMutableDictionary *attributes = [NSMutableDictionary dictionaryWithObjectsAndKeys:
     [self font], NSFontAttributeName,
@@ -689,7 +679,7 @@ extern "C"
 									   float fillColorR, float fillColorG, float fillColorB, float fillColorA,
 									   BOOL isStrokeEnabled, float strokeWidth, float strokeColorR, float strokeColorG, float strokeColorB, float strokeColorA,
 									   BOOL isShadowEnabled, float shadowOffsetX, float shadowOffsetY, float shadowColorR, float shadowColorG, float shadowColorB, float shadowColorA,
-									   float offset, int textureID);
+									   float lineSpacing, float offset, int textureID);
   
   int _SysFontGetTextureWidth(int textureID);
 
@@ -734,7 +724,7 @@ void _SysFontQueueTextureWithOptions(const char *text, const char *fontName,
 									 float fillColorR, float fillColorG, float fillColorB, float fillColorA,
 									 BOOL isStrokeEnabled, float strokeWidth, float strokeColorR, float strokeColorG, float strokeColorB, float strokeColorA,
 									 BOOL isShadowEnabled, float shadowOffsetX, float shadowOffsetY, float shadowColorR, float shadowColorG, float shadowColorB, float shadowColorA,
-									 float offset, int textureID)
+									 float lineSpacing, float offset, int textureID)
 {
   UnitySysFontTextureManager *instance;
   UnitySysFontTextureUpdate *update;
@@ -752,7 +742,7 @@ void _SysFontQueueTextureWithOptions(const char *text, const char *fontName,
 										   isStrokeEnabled:isStrokeEnabled strokeWidth:strokeWidth strokeColor:[NSColor colorWithCalibratedRed:strokeColorR green:strokeColorG blue:strokeColorB alpha:strokeColorA]
 										   isShadowEnabled:isShadowEnabled shadowOffset:CGPointMake(shadowOffsetX, shadowOffsetY) shadowColor:[NSColor colorWithCalibratedRed:shadowColorR green:shadowColorG blue:shadowColorB alpha:shadowColorA]
 #endif
-													offset:offset textureID:textureID];
+											   lineSpacing:lineSpacing offset:offset textureID:textureID];
   
   instance = [UnitySysFontTextureManager sharedInstance];
   @synchronized(instance)

@@ -68,7 +68,7 @@ public class SysFont : MonoBehaviour
       float fillColorR, float fillColorG, float fillColorB, float fillColorA, 
       bool isStrokeEnabled, float strokeWidth, float strokeColorR, float strokeColorG, float strokeColorB, float strokeColorA, 
       bool isShadowEnabled, float shadowOffsetX, float shadowOffsetY, float shadowColorR, float shadowColorG, float shadowColorB, float shadowColorA, 
-      float offset, int textureID);
+      float lineSpacing, float offset, int textureID);
 
 #if UNITY_EDITOR || UNITY_STANDALONE_OSX
   [DllImport("SysFont")]
@@ -155,7 +155,7 @@ public class SysFont : MonoBehaviour
       float fillColorR, float fillColorG, float fillColorB, float fillColorA, 
       bool isStrokeEnabled, float strokeWidth, float strokeColorR, float strokeColorG, float strokeColorB, float strokeColorA, 
       bool isShadowEnabled, float shadowOffsetX, float shadowOffsetY, float shadowColorR, float shadowColorG, float shadowColorB, float shadowColorA, 
-      float offset, int textureID)
+      float lineSpacing, float offset, int textureID)
   {
     UnitySysFontInstance.Call("queueTexture", text, fontName, fontSize,
         isBold, isItalic, (int)alignment, maxWidthPixels, maxHeightPixels,
@@ -214,7 +214,7 @@ public class SysFont : MonoBehaviour
       float fillColorR, float fillColorG, float fillColorB, float fillColorA, 
       bool isStrokeEnabled, float strokeWidth, float strokeColorR, float strokeColorG, float strokeColorB, float strokeColorA, 
       bool isShadowEnabled, float shadowOffsetX, float shadowOffsetY, float shadowColorR, float shadowColorG, float shadowColorB, float shadowColorA, 
-      float offset, int textureID)
+      float lineSpacing, float offset, int textureID)
   {
     // dummy function: just don't fail the build
   }
@@ -303,7 +303,7 @@ public class SysFont : MonoBehaviour
       float fillColorR, float fillColorG, float fillColorB, float fillColorA, 
       bool isStrokeEnabled, float strokeWidth, float strokeColorR, float strokeColorG, float strokeColorB, float strokeColorA, 
       bool isShadowEnabled, float shadowOffsetX, float shadowOffsetY, float shadowColorR, float shadowColorG, float shadowColorB, float shadowColorA, 
-      float offset, int textureID)
+      float lineSpacing, float offset, int textureID)
   {
     if(text == null)
     {
@@ -319,7 +319,7 @@ public class SysFont : MonoBehaviour
         fillColorR, fillColorG, fillColorB, fillColorA, 
         isStrokeEnabled, strokeWidth, strokeColorR, strokeColorG, strokeColorB, strokeColorA, 
         isShadowEnabled, shadowOffsetX, shadowOffsetY, shadowColorR, shadowColorG, shadowColorB, shadowColorA, 
-        offset, textureID);
+        lineSpacing, offset, textureID);
   }
 
 

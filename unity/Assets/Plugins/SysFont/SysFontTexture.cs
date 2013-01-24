@@ -66,6 +66,7 @@ public class SysFontTexture : ISysFontTexturable
   [SerializeField] protected Vector2 _shadowOffset = new Vector2(2.0f, -2.0f);
   [SerializeField] protected Color _shadowColor = new Color(0.0f, 0.0f, 0.0f, 0.75f);
 
+  protected float _lineSpacing = 0.0f;
   protected float _offset = 0.0f;
 
   protected string _lastText;
@@ -381,7 +382,21 @@ public class SysFontTexture : ISysFontTexturable
     }
   }
 
-  protected float _lastOffset;
+  public float LineSpacing
+  {
+    get
+    {
+      return _lineSpacing;
+    }
+    set
+    {
+      if (_lineSpacing != value)
+      {
+        _lineSpacing = value;
+      }
+    }
+  }
+
   public float Offset
   {
     get
@@ -485,7 +500,7 @@ public class SysFontTexture : ISysFontTexturable
         _fillColor.r, _fillColor.g, _fillColor.b, _fillColor.a, 
         _isStrokeEnabled, _strokeWidth, _strokeColor.r, _strokeColor.g, _strokeColor.b, _strokeColor.a, 
         _isShadowEnabled, _shadowOffset.x, _shadowOffset.y, _shadowColor.r, _shadowColor.g, _shadowColor.b, _shadowColor.a, 
-        _offset, textureID);
+        _lineSpacing, _offset, textureID);
 
     _textWidthPixels = SysFont.GetTextWidth(textureID);
     _textHeightPixels = SysFont.GetTextHeight(textureID);
@@ -509,7 +524,6 @@ public class SysFontTexture : ISysFontTexturable
     _lastStrokeColor = _strokeColor;
     _lastShadowOffset = _shadowOffset;
     _lastShadowColor = _shadowColor;
-    _lastOffset = _offset;
   }
 
   public void Destroy()

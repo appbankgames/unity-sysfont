@@ -509,23 +509,30 @@ public class SysFontText : MonoBehaviour, ISysFontTexturable
   {
     if (_texture.NeedsRedraw)
     {
+      _texture.LineSpacing = 0.0f;
+      _texture.Offset = 0.0f;
       if(!Application.isEditor)
       {
-        float baseRate = 0.375f;
-        float r = 1.0f;
-        if ((_pivot == PivotAlignment.TopLeft) ||
-            (_pivot == PivotAlignment.Top) ||
-            (_pivot == PivotAlignment.TopRight))
+        if(_texture.FontName.IndexOf("HiraKakuProN") == 0)
         {
-          r = 0.25f;
+          _texture.LineSpacing = _texture.FontSize * 0.25f;
+          
+          float baseRate = 0.375f;
+          float r = 1.0f;
+          if ((_pivot == PivotAlignment.TopLeft) ||
+              (_pivot == PivotAlignment.Top) ||
+              (_pivot == PivotAlignment.TopRight))
+          {
+            r = 0.25f;
+          }
+          else if ((_pivot == PivotAlignment.BottomLeft) ||
+              (_pivot == PivotAlignment.Bottom) ||
+              (_pivot == PivotAlignment.BottomRight))
+          {
+            r = 2.0f;
+          }
+          _texture.Offset = _texture.FontSize * baseRate * r;
         }
-        else if ((_pivot == PivotAlignment.BottomLeft) ||
-            (_pivot == PivotAlignment.Bottom) ||
-            (_pivot == PivotAlignment.BottomRight))
-        {
-          r = 2.0f;
-        }
-        _texture.Offset = _texture.FontSize * baseRate * r;
       }
 
       _texture.Update();

@@ -317,23 +317,30 @@ public class UISysFontLabel : UIWidget, ISysFontTexturable
   {
     if (_texture.NeedsRedraw)
     {
+      _texture.LineSpacing = 0.0f;
+      _texture.Offset = 0.0f;
       if(!Application.isEditor)
       {
-        float baseRate = 0.375f;
-        float r = 1.0f;
-        if ((pivot == UIWidget.Pivot.TopLeft) ||
-            (pivot == UIWidget.Pivot.Top) ||
-            (pivot == UIWidget.Pivot.TopRight))
+        if(_texture.FontName.IndexOf("HiraKakuProN") == 0)
         {
-          r = 0.25f;
+          _texture.LineSpacing = _texture.FontSize * 0.25f;
+            
+          float baseRate = 0.375f;
+          float r = 1.0f;
+          if ((pivot == UIWidget.Pivot.TopLeft) ||
+              (pivot == UIWidget.Pivot.Top) ||
+              (pivot == UIWidget.Pivot.TopRight))
+          {
+            r = 0.25f;
+          }
+          else if ((pivot == UIWidget.Pivot.BottomLeft) ||
+              (pivot == UIWidget.Pivot.Bottom) ||
+              (pivot == UIWidget.Pivot.BottomRight))
+          {
+            r = 2.0f;
+          }
+          _texture.Offset = _texture.FontSize * baseRate * r;
         }
-        else if ((pivot == UIWidget.Pivot.BottomLeft) ||
-            (pivot == UIWidget.Pivot.Bottom) ||
-            (pivot == UIWidget.Pivot.BottomRight))
-        {
-          r = 2.0f;
-        }
-        _texture.Offset = _texture.FontSize * baseRate * r;
       }
 
       _texture.Update();
