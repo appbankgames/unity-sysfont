@@ -408,7 +408,7 @@ public class UISysFontLabel : UIWidget, ISysFontTexturable
   {
     if (_shader == null)
     {
-      _shader = Shader.Find("Unlit/Transparent Colored");
+      _shader = Shader.Find("Unlit/Transparent Colored (SysFont)");
     }
 
     if (_createdMaterial == null)
