@@ -520,8 +520,10 @@ public class SysFontTexture : ISysFontTexturable
     _lastMaxHeightPixels = _maxHeightPixels;
     _lastLineBreakMode = _lineBreakMode;
     _lastFillColor = _fillColor;
+    _lastIsStrokeEnabled = _isStrokeEnabled;
     _lastStrokeWidth = _strokeWidth;
     _lastStrokeColor = _strokeColor;
+    _lastIsShadowEnabled = _isShadowEnabled;
     _lastShadowOffset = _shadowOffset;
     _lastShadowColor = _shadowColor;
   }
