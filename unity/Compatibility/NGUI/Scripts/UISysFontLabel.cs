@@ -362,7 +362,7 @@ public class UISysFontLabel : UIWidget, ISysFontTexturable
     base.MakePixelPerfect();
   }
 
-#if (UNITY_3_4 || UNITY_3_5_0 || UNITY_3_5_1 || UNITY_3_5_2 || UNITY_3_5_3 || UNITY_3_5_4)
+#if (UNITY_3_4 || UNITY_3_5_0 || UNITY_3_5_1 || UNITY_3_5_2 || UNITY_3_5_3 || UNITY_3_5_4 || UNITY_3_5_5 || UNITY_3_5_6 || UNITY_3_5_7)
   override public void OnFill(BetterList<Vector3> verts,
       BetterList<Vector2> uvs, BetterList<Color> cols)
 #else
