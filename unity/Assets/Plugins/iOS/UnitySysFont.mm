@@ -425,7 +425,7 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 		// Draw shadow
 		if(isStrokeEnabled)
 		{
-			[attributedString addAttribute:(id)kCTStrokeWidthAttributeName value:[NSNumber numberWithFloat:strokeWidth * 2.0f / (CGFloat)fontSize * 100.0f] range:nsRange];
+			[attributedString addAttribute:(id)kCTStrokeWidthAttributeName value:[NSNumber numberWithFloat:-strokeWidth * 2.0f / (CGFloat)fontSize * 100.0f] range:nsRange];
 			[attributedString addAttribute:(id)kCTStrokeColorAttributeName value:(id)shadowColor.CGColor range:nsRange];
 		}
 		[attributedString addAttribute:(id)kCTForegroundColorAttributeName value:(id)shadowColor.CGColor range:nsRange];
@@ -516,7 +516,7 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 		// Draw shadow
 		if(isStrokeEnabled)
 		{
-			[attributedString addAttribute:NSStrokeWidthAttributeName value:[NSNumber numberWithFloat:strokeWidth * 2.0f / (CGFloat)fontSize * 100.0f] range:nsRange];
+			[attributedString addAttribute:NSStrokeWidthAttributeName value:[NSNumber numberWithFloat:-strokeWidth * 2.0f / (CGFloat)fontSize * 100.0f] range:nsRange];
 			[attributedString addAttribute:NSStrokeColorAttributeName value:shadowColor range:nsRange];
 		}
 		[attributedString addAttribute:NSForegroundColorAttributeName value:shadowColor range:nsRange];
