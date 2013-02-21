@@ -59,8 +59,8 @@ Shader "SysFont/Unlit Transparent"
         {
           fixed4 texColor = tex2D(_MainTex, i.texcoord);
           fixed4 output = texColor;
-          output.rgb = texColor.rgb * _Color.rgb * _Color.a;
-          output.a = texColor.a * _Color.a;
+          output.rgb *= _Color.rgb * _Color.a;
+          output.a *= _Color.a;
           return output;
         }
       ENDCG

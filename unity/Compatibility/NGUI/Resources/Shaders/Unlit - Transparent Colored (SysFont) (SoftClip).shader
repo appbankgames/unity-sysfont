@@ -67,7 +67,9 @@ Shader "Unlit/Transparent Colored (SysFont) (SoftClip)"
 				float2 factor = (float2(1.0, 1.0) - abs(IN.worldPos)) * _ClipSharpness;
 			
 				// Sample the texture
-				half4 col = tex2D(_MainTex, IN.texcoord) * IN.color;
+				half4 col = tex2D(_MainTex, IN.texcoord);
+				col.rgb *= IN.color.rgb * IN.color.a;
+				col.a *= IN.color.a;
 				col.a *= clamp( min(factor.x, factor.y), 0.0, 1.0);
 				return col;
 			}

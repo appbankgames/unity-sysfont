@@ -62,7 +62,9 @@ Shader "Unlit/Transparent Colored (SysFont) (AlphaClip)"
 			half4 frag (v2f IN) : COLOR
 			{
 				// Sample the texture
-				half4 col = tex2D(_MainTex, IN.texcoord) * IN.color;
+				half4 col = tex2D(_MainTex, IN.texcoord);
+				col.rgb *= IN.color.rgb * IN.color.a;
+				col.a *= IN.color.a;
 
 				float2 factor = abs(IN.worldPos);
 				float val = 1.0 - max(factor.x, factor.y);

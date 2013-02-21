@@ -64,7 +64,12 @@ Shader "Unlit/Transparent Colored (SysFont) (HardClip)"
 			{
 				float2 factor = abs(IN.worldPos);
 				clip(1.0 - max(factor.x, factor.y));
-				return tex2D(_MainTex, IN.texcoord) * IN.color;
+				
+				half4 output = tex2D(_MainTex, IN.texcoord);
+				output.rgb *= IN.color.rgb * IN.color.a;
+				output.a *= IN.color.a;
+
+				return output;
 			}
 			ENDCG
 		}
