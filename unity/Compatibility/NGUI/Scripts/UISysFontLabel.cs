@@ -39,7 +39,22 @@ public class UISysFontLabel : UIWidget, ISysFontTexturable
     }
     set
     {
-      _texture.Text = value;
+      if(_texture.Text != value)
+      {
+        _texture.Text = value;
+        if(_panel == null)
+        {
+          _panel = gameObject.GetComponent<UIPanel>();
+        }
+        if(_panel == null)
+        {
+          _panel = FindPanelInParents(gameObject);
+        }
+        if(_panel != null)
+        {
+          _panel.Refresh();
+        }
+      }
     }
   }
 
@@ -303,6 +318,17 @@ public class UISysFontLabel : UIWidget, ISysFontTexturable
   protected Material _createdMaterial = null;
   protected Vector3[] _vertices = null;
   protected Vector2 _uv;
+  private UIPanel _panel = null;
+
+  private UIPanel FindPanelInParents(GameObject obj)
+  {
+    UIPanel panel = obj.GetComponent<UIPanel>();
+    if(panel == null && obj.transform.parent != null)
+    {
+      panel = FindPanelInParents(obj.transform.parent.gameObject);
+    }
+    return panel;
+  }
 
   #region UIWidget
 	public override bool keepMaterial

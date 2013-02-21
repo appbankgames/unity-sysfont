@@ -39,7 +39,11 @@ public class SysFontText : MonoBehaviour, ISysFontTexturable
     }
     set
     {
-      _texture.Text = value;
+      if(_texture.Text != value)
+      {
+        _texture.Text = value;
+        Update();
+      }
     }
   }
 
