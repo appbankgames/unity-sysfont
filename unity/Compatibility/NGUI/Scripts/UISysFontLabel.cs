@@ -42,17 +42,21 @@ public class UISysFontLabel : UIWidget, ISysFontTexturable
       if(_texture.Text != value)
       {
         _texture.Text = value;
-        if(_panel == null)
+
+        if(Application.isPlaying)
         {
-          _panel = gameObject.GetComponent<UIPanel>();
-        }
-        if(_panel == null)
-        {
-          _panel = FindPanelInParents(gameObject);
-        }
-        if(_panel != null)
-        {
-          _panel.Refresh();
+          if(_panel == null)
+          {
+            _panel = gameObject.GetComponent<UIPanel>();
+          }
+          if(_panel == null)
+          {
+            _panel = FindPanelInParents(gameObject);
+          }
+          if(_panel != null)
+          {
+            _panel.Refresh();
+          }
         }
       }
     }
@@ -328,11 +332,17 @@ public class UISysFontLabel : UIWidget, ISysFontTexturable
     }
 
     UIPanel panel = obj.GetComponent<UIPanel>();
-    if(panel == null && obj.transform.parent != null)
+    if(panel != null)
     {
-      panel = FindPanelInParents(obj.transform.parent.gameObject);
+      return panel;
     }
-    return panel;
+
+    if(obj.transform.parent != null)
+    {
+      return FindPanelInParents(obj.transform.parent.gameObject);
+    }
+
+    return null;
   }
 
   #region UIWidget
