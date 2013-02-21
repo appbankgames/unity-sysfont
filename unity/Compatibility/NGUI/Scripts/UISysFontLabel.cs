@@ -322,6 +322,11 @@ public class UISysFontLabel : UIWidget, ISysFontTexturable
 
   private UIPanel FindPanelInParents(GameObject obj)
   {
+    if(obj == null)
+    {
+      return null;
+    }
+
     UIPanel panel = obj.GetComponent<UIPanel>();
     if(panel == null && obj.transform.parent != null)
     {
