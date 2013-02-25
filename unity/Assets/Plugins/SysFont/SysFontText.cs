@@ -42,7 +42,11 @@ public class SysFontText : MonoBehaviour, ISysFontTexturable
       if(_texture.Text != value)
       {
         _texture.Text = value;
-        Update();
+        
+        if(Application.isPlaying)
+        {
+          Update();
+        }
       }
     }
   }
