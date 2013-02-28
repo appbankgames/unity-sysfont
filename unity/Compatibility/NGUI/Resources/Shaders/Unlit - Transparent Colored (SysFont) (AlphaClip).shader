@@ -70,7 +70,7 @@ Shader "Unlit/Transparent Colored (SysFont) (AlphaClip)"
 				float val = 1.0 - max(factor.x, factor.y);
 
 				// Option 1: 'if' statement
-				if (val < 0.0) col.a = 0.0;
+				if (val < 0.0) col.rgba = 0.0;
 
 				// Option 2: no 'if' statement -- may be faster on some devices
 				//col.a *= ceil(clamp(val, 0.0, 1.0));

@@ -70,7 +70,7 @@ Shader "Unlit/Transparent Colored (SysFont) (SoftClip)"
 				half4 col = tex2D(_MainTex, IN.texcoord);
 				col.rgb *= IN.color.rgb * IN.color.a;
 				col.a *= IN.color.a;
-				col.a *= clamp( min(factor.x, factor.y), 0.0, 1.0);
+				col.rgba *= clamp( min(factor.x, factor.y), 0.0, 1.0);
 				return col;
 			}
 			ENDCG
