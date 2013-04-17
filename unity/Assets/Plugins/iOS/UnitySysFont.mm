@@ -285,12 +285,16 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 	CTFontRef ctFont = CTFontCreateWithName((CFStringRef)fontName, fontSize, NULL);
-	NSMutableDictionary *attributes = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-									   (id)ctFont, (id)kCTFontAttributeName, nil];
+	if([self respondsToSelector:@selector(createHighlightedString:)])
+	{
+		attributedString = [self performSelector:@selector(createHighlightedString:) withObject:text];
+	}
+	else
+	{
+		attributedString = [[NSMutableAttributedString alloc] initWithString:text];
+	}
+	[attributedString addAttribute:(id)kCTFontAttributeName value:(id)ctFont range:NSMakeRange(0, [attributedString length])];
 
-	attributedString = [[NSMutableAttributedString alloc]
-						initWithString:text attributes:attributes];
-	
 	CTLineBreakMode ctLineBreakMode = (CTLineBreakMode)lineBreakMode;
 	CTTextAlignment textAlignMent = kCTLeftTextAlignment;
 	if(alignment == 1)
@@ -336,12 +340,18 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 
   NSMutableDictionary *attributes = [NSMutableDictionary dictionaryWithObjectsAndKeys:
     [self font], NSFontAttributeName,
-    [NSColor whiteColor], NSForegroundColorAttributeName,
     [NSColor clearColor], NSBackgroundColorAttributeName,
     parStyle, NSParagraphStyleAttributeName, nil];
 
-  attributedString = [[NSMutableAttributedString alloc] 
-    initWithString:text attributes:attributes];
+	if([self respondsToSelector:@selector(createHighlightedString:)])
+	{
+		attributedString = [self performSelector:@selector(createHighlightedString:) withObject:text];
+	}
+	else
+	{
+		attributedString = [[NSMutableAttributedString alloc] initWithString:text];
+	}
+	[attributedString addAttributes:attributes range:NSMakeRange(0, [attributedString length])];
 
   boundsSize = NSSizeToCGSize([attributedString
       boundingRectWithSize:NSSizeFromCGSize(maxSize)
@@ -423,39 +433,43 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 	if(isShadowEnabled)
 	{
 		// Draw shadow
+		NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithAttributedString:attributedString];
 		if(isStrokeEnabled)
 		{
-			[attributedString addAttribute:(id)kCTStrokeWidthAttributeName value:[NSNumber numberWithFloat:-strokeWidth * 2.0f / (CGFloat)fontSize * 100.0f] range:nsRange];
-			[attributedString addAttribute:(id)kCTStrokeColorAttributeName value:(id)shadowColor.CGColor range:nsRange];
+			[string addAttribute:(id)kCTStrokeWidthAttributeName value:[NSNumber numberWithFloat:-strokeWidth * 2.0f / (CGFloat)fontSize * 100.0f] range:nsRange];
+			[string addAttribute:(id)kCTStrokeColorAttributeName value:(id)shadowColor.CGColor range:nsRange];
 		}
-		[attributedString addAttribute:(id)kCTForegroundColorAttributeName value:(id)shadowColor.CGColor range:nsRange];
+		[string addAttribute:(id)kCTForegroundColorAttributeName value:(id)shadowColor.CGColor range:nsRange];
 		
-		framesetter = CTFramesetterCreateWithAttributedString((CFMutableAttributedStringRef)attributedString);
+		framesetter = CTFramesetterCreateWithAttributedString((CFMutableAttributedStringRef)string);
 		path = [[UIBezierPath bezierPathWithRect:CGRectOffset(drawRect, shadowOffset.x, shadowOffset.y)] CGPath];
 		textFrame = CTFramesetterCreateFrame(framesetter, cfRange, path, NULL);
 		CTFrameDraw(textFrame, context);
 		CFRelease(textFrame);
 		CFRelease(framesetter);
+		[string release];
 	}
 	
 	if(isStrokeEnabled)
 	{
 		// Draw stroke
-		[attributedString addAttribute:(id)kCTStrokeWidthAttributeName value:[NSNumber numberWithFloat:strokeWidth * 2.0f / (CGFloat)fontSize * 100.0f] range:nsRange];
-		[attributedString addAttribute:(id)kCTStrokeColorAttributeName value:(id)strokeColor.CGColor range:nsRange];
+		NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithAttributedString:attributedString];
+		[string addAttribute:(id)kCTStrokeWidthAttributeName value:[NSNumber numberWithFloat:strokeWidth * 2.0f / (CGFloat)fontSize * 100.0f] range:nsRange];
+		[string addAttribute:(id)kCTStrokeColorAttributeName value:(id)strokeColor.CGColor range:nsRange];
+		[string addAttribute:(id)kCTForegroundColorAttributeName value:(id)strokeColor.CGColor range:nsRange];
 		
-		framesetter = CTFramesetterCreateWithAttributedString((CFMutableAttributedStringRef)attributedString);
+		framesetter = CTFramesetterCreateWithAttributedString((CFMutableAttributedStringRef)string);
 		path = [[UIBezierPath bezierPathWithRect:drawRect] CGPath];
 		textFrame = CTFramesetterCreateFrame(framesetter, cfRange, path, NULL);
 		CTFrameDraw(textFrame, context);
 		CFRelease(textFrame);
 		CFRelease(framesetter);
+		[string release];
 	}
 	
 	// Draw text
 	[attributedString removeAttribute:(id)kCTStrokeWidthAttributeName range:nsRange];
 	[attributedString removeAttribute:(id)kCTStrokeColorAttributeName range:nsRange];
-	[attributedString addAttribute:(id)kCTForegroundColorAttributeName value:(id)fillColor.CGColor range:nsRange];
 	
 	framesetter = CTFramesetterCreateWithAttributedString((CFMutableAttributedStringRef)attributedString);
 	path = [[UIBezierPath bezierPathWithRect:drawRect] CGPath];
@@ -514,29 +528,33 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 	if(isShadowEnabled)
 	{
 		// Draw shadow
+		NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithAttributedString:attributedString];
 		if(isStrokeEnabled)
 		{
-			[attributedString addAttribute:NSStrokeWidthAttributeName value:[NSNumber numberWithFloat:-strokeWidth * 2.0f / (CGFloat)fontSize * 100.0f] range:nsRange];
-			[attributedString addAttribute:NSStrokeColorAttributeName value:shadowColor range:nsRange];
+			[string addAttribute:NSStrokeWidthAttributeName value:[NSNumber numberWithFloat:-strokeWidth * 2.0f / (CGFloat)fontSize * 100.0f] range:nsRange];
+			[string addAttribute:NSStrokeColorAttributeName value:shadowColor range:nsRange];
 		}
-		[attributedString addAttribute:NSForegroundColorAttributeName value:shadowColor range:nsRange];
-		[attributedString drawWithRect:NSOffsetRect(drawRect, shadowOffset.x, shadowOffset.y)
-							   options:NSStringDrawingUsesLineFragmentOrigin];
+		[string addAttribute:NSForegroundColorAttributeName value:shadowColor range:nsRange];
+		[string drawWithRect:NSOffsetRect(drawRect, shadowOffset.x, shadowOffset.y)
+					 options:NSStringDrawingUsesLineFragmentOrigin];
+		[string release];
 	}
 	
 	if(isStrokeEnabled)
 	{
 		// Draw stroke
-		[attributedString addAttribute:NSStrokeWidthAttributeName value:[NSNumber numberWithFloat:strokeWidth * 2.0f / (CGFloat)fontSize * 100.0f] range:nsRange];
-		[attributedString addAttribute:NSStrokeColorAttributeName value:strokeColor range:nsRange];
-		[attributedString drawWithRect:drawRect
-							   options:NSStringDrawingUsesLineFragmentOrigin];
+		NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithAttributedString:attributedString];
+		[string addAttribute:NSStrokeWidthAttributeName value:[NSNumber numberWithFloat:strokeWidth * 2.0f / (CGFloat)fontSize * 100.0f] range:nsRange];
+		[string addAttribute:NSStrokeColorAttributeName value:strokeColor range:nsRange];
+		[string addAttribute:NSForegroundColorAttributeName value:strokeColor range:nsRange];
+		[string drawWithRect:drawRect
+					 options:NSStringDrawingUsesLineFragmentOrigin];
+		[string release];
 	}
 	
 	// Draw text
 	[attributedString removeAttribute:NSStrokeWidthAttributeName range:nsRange];
 	[attributedString removeAttribute:NSStrokeColorAttributeName range:nsRange];
-	[attributedString addAttribute:NSForegroundColorAttributeName value:fillColor range:nsRange];
   [attributedString drawWithRect:drawRect
     options:NSStringDrawingUsesLineFragmentOrigin];
 
@@ -564,6 +582,7 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 @interface UnitySysFontTextureManager : NSObject
 {
   NSMutableDictionary *updateQueue;
+	NSMutableArray *highlightedColors;
 }
 
 + (UnitySysFontTextureManager *)sharedInstance;
@@ -571,6 +590,15 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 - (UnitySysFontTextureUpdate *)updateHavingTextureID:(int)textureID;
 - (void)queueUpdate:(UnitySysFontTextureUpdate *)update;
 - (void)dequeueUpdate:(NSNumber *)textureID;
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+- (void)addHighlightedColor:(UIColor *)color;
+- (UIColor *)colorForHighlightedLevel:(int)highlightedLevel;
+#elif TARGET_OS_MAC
+- (void)addHighlightedColor:(NSColor *)color;
+- (NSColor *)colorForHighlightedLevel:(int)highlightedLevel;
+#endif
+- (void)clearHighlightedColors;
 @end
 
 @implementation UnitySysFontTextureManager 
@@ -600,6 +628,7 @@ static UnitySysFontTextureManager *sharedInstance;
   if (self != nil)
   {
     updateQueue = [[NSMutableDictionary alloc] initWithCapacity:numItems];
+	  highlightedColors = [[NSMutableArray alloc] init];
   }
 
   return self;
@@ -608,6 +637,7 @@ static UnitySysFontTextureManager *sharedInstance;
 - (void)dealloc
 {
   [updateQueue release];
+	[highlightedColors release];
   [super dealloc];
 }
 
@@ -665,6 +695,150 @@ static UnitySysFontTextureManager *sharedInstance;
 #endif
   }
 }
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+- (void)addHighlightedColor:(UIColor *)color
+#elif TARGET_OS_MAC
+- (void)addHighlightedColor:(NSColor *)color
+#endif
+{
+	[highlightedColors addObject:color];
+}
+
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+- (UIColor *)colorForHighlightedLevel:(int)highlightedLevel
+#elif TARGET_OS_MAC
+- (NSColor *)colorForHighlightedLevel:(int)highlightedLevel
+#endif
+{
+	if(highlightedLevel <= 0 || [highlightedColors count] <= 0)
+	{
+		return nil;
+	}
+	
+	int index = highlightedLevel-1;
+	if(index > [highlightedColors count]-1)
+	{
+		index = [highlightedColors count]-1;
+	}
+	
+	return [highlightedColors objectAtIndex:index];
+}
+
+
+- (void)clearHighlightedColors
+{
+	[highlightedColors removeAllObjects];
+}
+
+@end
+
+
+@implementation UnitySysFontTextureUpdate (HighlightedString)
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+- (NSAttributedString *)highlightString:(NSString *)string withColor:(UIColor *)color
+#elif TARGET_OS_MAC
+- (NSAttributedString *)highlightString:(NSString *)string withColor:(NSColor *)color
+#endif
+{
+	NSMutableAttributedString *highlightedString = [[[NSMutableAttributedString alloc] initWithString:string] autorelease];
+	NSRange range = NSMakeRange(0, [highlightedString length]);
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+	[highlightedString addAttribute:(id)kCTForegroundColorAttributeName value:(id)color.CGColor range:range];
+#elif TARGET_OS_MAC
+	[highlightedString addAttribute:NSForegroundColorAttributeName value:color range:range];
+#endif
+	return highlightedString;
+}
+
+
+- (NSAttributedString *)createHighlightedString:(NSString *)string
+{
+	int highlightedLevel = 0;
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+	UIColor *color = fillColor;
+#elif TARGET_OS_MAC
+	NSColor *color = fillColor;
+#endif
+	NSMutableAttributedString *highlightedString = [[NSMutableAttributedString alloc] initWithString:@""];
+	
+	NSCharacterSet *charSet = [NSCharacterSet characterSetWithCharactersInString:@"\\*"];
+	NSRange range = NSMakeRange(0, [string length]);
+	BOOL isHighlighted = NO;
+	while(1)
+	{
+		NSRange found = [string rangeOfCharacterFromSet:charSet options:0 range:range];
+		if(found.location == NSNotFound)
+		{
+			[highlightedString appendAttributedString:[self highlightString:[string substringWithRange:range] withColor:color]];
+			break;
+		}
+		
+		[highlightedString appendAttributedString:[self highlightString:[string substringWithRange:NSMakeRange(range.location, found.location-range.location)] withColor:color]];
+		
+		NSString *token = [string substringWithRange:found];
+		NSString *nextToken = nil;
+		int len;
+		if(found.location < [string length]-1)
+		{
+			nextToken = [string substringWithRange:NSMakeRange(found.location+1, 1)];
+		}
+		
+		if([token isEqualToString:@"\\"])
+		{
+			if(!nextToken)
+			{
+				break;
+			}
+			
+			[highlightedString appendAttributedString:[self highlightString:nextToken withColor:color]];
+			len = 2;
+		}
+		else if([token isEqualToString:@"*"])
+		{
+			BOOL more = (nextToken && [nextToken isEqualToString:@"*"]);
+			if(!isHighlighted)
+			{
+				isHighlighted = YES;
+				if(more)
+				{
+					highlightedLevel = 2;
+				}
+				else
+				{
+					highlightedLevel = 1;
+				}
+				len = highlightedLevel;
+			}
+			else
+			{
+				isHighlighted = NO;
+				if(more && highlightedLevel == 2)
+				{
+					len = 2;
+				}
+				else
+				{
+					len = 1;
+				}
+				highlightedLevel = 0;
+			}
+			
+			color = [[UnitySysFontTextureManager sharedInstance] colorForHighlightedLevel:highlightedLevel];
+			if(color == nil)
+			{
+				color = fillColor;
+			}
+		}
+		
+		range = NSMakeRange(found.location+len, [string length]-found.location-len);
+	}
+	
+	return highlightedString;
+}
+
 @end
 
 extern "C"
@@ -694,6 +868,9 @@ extern "C"
   void _SysFontRender();
 
   void _SysFontDequeueTexture(int textureID);
+
+	void _SysFontAddHighlightedColor(float r, float g, float b, float a);
+	void _SysFontClearHighlightedColors();
 
   void UnityRenderEvent(int eventID);
 }
@@ -850,6 +1027,33 @@ void _SysFontDequeueTexture(int textureID)
     [instance dequeueUpdate:[NSNumber numberWithInt:textureID]];
   }
 }
+
+
+void _SysFontAddHighlightedColor(float r, float g, float b, float a)
+{
+	UnitySysFontTextureManager *instance;
+	instance = [UnitySysFontTextureManager sharedInstance];
+	@synchronized(instance)
+	{
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+		[instance addHighlightedColor:[UIColor colorWithRed:r green:g blue:b alpha:a]];
+#elif TARGET_OS_MAC
+		[instance addHighlightedColor:[NSColor colorWithCalibratedRed:r green:g blue:b alpha:a]];
+#endif
+	}
+}
+
+
+void _SysFontClearHighlightedColors()
+{
+	UnitySysFontTextureManager *instance;
+	instance = [UnitySysFontTextureManager sharedInstance];
+	@synchronized(instance)
+	{
+		[instance clearHighlightedColors];
+	}
+}
+
 
 void UnityRenderEvent(int eventID)
 {

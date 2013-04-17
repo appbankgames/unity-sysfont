@@ -118,6 +118,20 @@ public class SysFont : MonoBehaviour
   private static extern void _SysFontRender();
 #endif
 
+#if UNITY_EDITOR || UNITY_STANDALONE_OSX
+  [DllImport("SysFont")]
+#else
+  [DllImport("__Internal")]
+#endif
+  private static extern void _SysFontAddHighlightedColor(float r, float g, float b, float a);
+
+#if UNITY_EDITOR || UNITY_STANDALONE_OSX
+  [DllImport("SysFont")]
+#else
+  [DllImport("__Internal")]
+#endif
+  private static extern void _SysFontClearHighlightedColors();
+
 #elif UNITY_ANDROID
 
   private static AndroidJavaObject _unitySysFontInstance = null;
@@ -337,6 +351,19 @@ public class SysFont : MonoBehaviour
   {
     _SysFontDequeueTexture(textureID);
   }
+
+
+  public static void AddHighlightedColor(Color color)
+  {
+    _SysFontAddHighlightedColor(color.r, color.g, color.b, color.a);
+  }
+
+
+  public static void ClearHighlightedColors()
+  {
+    _SysFontClearHighlightedColors();
+  }
+
 
   public static void SafeDestroy(UnityEngine.Object obj)
   {
