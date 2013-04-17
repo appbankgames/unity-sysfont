@@ -41,7 +41,8 @@ public class SysFont : MonoBehaviour
     Clip, 
     HeadTruncation, 
     TailTruncation, 
-    MiddleTruncation
+    MiddleTruncation, 
+    NarrowWidth = -1
   }
 
 #if UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_IPHONE

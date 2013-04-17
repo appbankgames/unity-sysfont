@@ -39,6 +39,7 @@ extern EAGLContext* _context;
 #endif
 
 #define UNITY_SYSFONT_UPDATE_QUEUE_CAPACITY 32
+#define UNITY_SYSFONT_MAX_WIDTH_PIXELS 2048
 
 int nextPowerOfTwo(int n);
 
@@ -87,6 +88,7 @@ int nextPowerOfTwo(int n)
 
   NSMutableAttributedString *attributedString;
 
+	@public float textWidthScale;
   @public int textWidth;
   @public int textHeight;
   @public int textureWidth;
@@ -280,7 +282,7 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 
 - (void)prepare
 {
-  CGSize maxSize = CGSizeMake(maxWidthPixels, maxHeightPixels);
+  CGSize maxSize = CGSizeMake(((lineBreakMode == -1)? UNITY_SYSFONT_MAX_WIDTH_PIXELS: maxWidthPixels), maxHeightPixels);
   CGSize boundsSize;
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
@@ -295,7 +297,7 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 	}
 	[attributedString addAttribute:(id)kCTFontAttributeName value:(id)ctFont range:NSMakeRange(0, [attributedString length])];
 
-	CTLineBreakMode ctLineBreakMode = (CTLineBreakMode)lineBreakMode;
+	CTLineBreakMode ctLineBreakMode = ((lineBreakMode == -1)? kCTLineBreakByWordWrapping: (CTLineBreakMode)lineBreakMode);
 	CTTextAlignment textAlignMent = kCTLeftTextAlignment;
 	if(alignment == 1)
 	{
@@ -322,6 +324,7 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
     lineBreakMode:(UILineBreakMode)lineBreakMode];
 #elif TARGET_OS_MAC
 
+	NSLineBreakMode nsLineBreakMode = ((lineBreakMode == -1)? NSLineBreakByWordWrapping: (NSLineBreakMode)lineBreakMode);
   NSTextAlignment _alignment = NSLeftTextAlignment;
 
   if (alignment == 1)
@@ -335,7 +338,7 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 
   NSMutableParagraphStyle *parStyle = [[NSMutableParagraphStyle alloc] init];
   [parStyle setAlignment:_alignment];
-  [parStyle setLineBreakMode:(NSLineBreakMode)lineBreakMode];
+  [parStyle setLineBreakMode:nsLineBreakMode];
 	[parStyle setMaximumLineHeight:lineSpacing];
 
   NSMutableDictionary *attributes = [NSMutableDictionary dictionaryWithObjectsAndKeys:
@@ -369,8 +372,14 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 	}
 
   textWidth = (int)ceilf(boundsSize.width);
+	textWidthScale = 1.0f;
   if (textWidth > maxWidthPixels)
   {
+	  if(lineBreakMode == -1)
+	  {
+		  // Narrows text width if overflown
+		  textWidthScale = (CGFloat)maxWidthPixels / textWidth;
+	  }
     textWidth = maxWidthPixels;
   }
   else if (textWidth <= 0)
@@ -411,7 +420,7 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
   CGContextSetAlpha(context, 1.f);
 
   CGRect drawRect = CGRectMake(0.f, (float)(textureHeight - textHeight) + offset,
-      textWidth, textHeight - offset);
+      textWidth / textWidthScale, textHeight - offset);
 	
 	if(isStrokeEnabled)
 	{
@@ -420,7 +429,7 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 	
   CGContextSaveGState(context);
   CGContextTranslateCTM(context, 0.0f, drawRect.size.height + drawRect.origin.y * 2);
-  CGContextScaleCTM(context, 1.0f, -1.0f);
+  CGContextScaleCTM(context, textWidthScale, -1.0f);
   
 	CGContextSetLineJoin(context, kCGLineJoinRound);
 	
@@ -508,11 +517,11 @@ maxHeightPixels:(int)_maxHeightPixels textureID:(int)_textureID
 
   NSAffineTransform *transform = [NSAffineTransform transform];
   [transform translateXBy:0.f yBy:textureHeight];
-  [transform scaleXBy:1.f yBy:-1.f];
+  [transform scaleXBy:textWidthScale yBy:-1.f];
   [transform concat];
 
   NSRect textureRect = NSMakeRect(0.f, 0.f, textureWidth, textureHeight);
-  NSRect drawRect = NSMakeRect(0.f, 0.f, textWidth, textHeight);
+  NSRect drawRect = NSMakeRect(0.f, 0.f, textWidth / textWidthScale, textHeight);
 
 	if(isStrokeEnabled)
 	{
