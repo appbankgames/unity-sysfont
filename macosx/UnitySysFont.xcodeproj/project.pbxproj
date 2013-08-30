@@ -12,6 +12,8 @@
 		335F31A41589B711008BC1E9 /* UnitySysFont.mm in Sources */ = {isa = PBXBuildFile; fileRef = 335F31A31589B711008BC1E9 /* UnitySysFont.mm */; };
 		33EE9B24157F58E400FDBC8F /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 33EE9B23157F58E400FDBC8F /* CoreFoundation.framework */; };
 		33EE9B2A157F58E400FDBC8F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 33EE9B28157F58E400FDBC8F /* InfoPlist.strings */; };
+		F37667BB17D0AB4400AF0A77 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37667BA17D0AB4400AF0A77 /* CoreGraphics.framework */; };
+		F37667BE17D0AB6900AF0A77 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37667BC17D0AB4C00AF0A77 /* CoreText.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +25,8 @@
 		33EE9B27157F58E400FDBC8F /* UnitySysFont-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "UnitySysFont-Info.plist"; sourceTree = "<group>"; };
 		33EE9B29157F58E400FDBC8F /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		33EE9B2B157F58E400FDBC8F /* UnitySysFont-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UnitySysFont-Prefix.pch"; sourceTree = "<group>"; };
+		F37667BA17D0AB4400AF0A77 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		F37667BC17D0AB4C00AF0A77 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -30,6 +34,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F37667BE17D0AB6900AF0A77 /* CoreText.framework in Frameworks */,
+				F37667BB17D0AB4400AF0A77 /* CoreGraphics.framework in Frameworks */,
 				332D56651580EFFC003B9E08 /* OpenGL.framework in Frameworks */,
 				332D56621580E956003B9E08 /* Cocoa.framework in Frameworks */,
 				33EE9B24157F58E400FDBC8F /* CoreFoundation.framework in Frameworks */,
@@ -61,6 +67,8 @@
 		33EE9B22157F58E400FDBC8F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F37667BC17D0AB4C00AF0A77 /* CoreText.framework */,
+				F37667BA17D0AB4400AF0A77 /* CoreGraphics.framework */,
 				33EE9B23157F58E400FDBC8F /* CoreFoundation.framework */,
 			);
 			name = Frameworks;
