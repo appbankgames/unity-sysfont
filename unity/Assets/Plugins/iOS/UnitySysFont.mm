@@ -634,11 +634,7 @@ static UnitySysFontTextureManager *sharedInstance;
 {
 	NSMutableAttributedString *highlightedString = [[[NSMutableAttributedString alloc] initWithString:string] autorelease];
 	NSRange range = NSMakeRange(0, [highlightedString length]);
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 	[highlightedString addAttribute:(id)kCTForegroundColorAttributeName value:(id)color.CGColor range:range];
-#elif TARGET_OS_MAC
-	[highlightedString addAttribute:NSForegroundColorAttributeName value:color range:range];
-#endif
 	return highlightedString;
 }
 
